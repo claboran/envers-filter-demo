@@ -1,5 +1,6 @@
 package de.laboranowitsch.poc.enversfilterdemo.entity
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
@@ -18,6 +19,7 @@ import java.util.UUID
 @Entity
 @Table(name = "product_descriptions")
 @Audited
+@JsonIgnoreProperties("hibernateLazyInitializer", "handler")
 data class DescriptionContainerEntity(
     @Id @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID? = null,
