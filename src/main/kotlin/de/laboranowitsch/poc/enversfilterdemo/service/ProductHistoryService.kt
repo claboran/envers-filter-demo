@@ -27,16 +27,33 @@ class ProductHistoryService(
         // Get the revision numbers and timestamps for the ParentEntity
         val revisions = auditReader.getRevisions(ParentEntity::class.java, id)
 
+        if (revisions.isEmpty()) {
+            logger().info("No revisions found for product ID: {}", id)
+            return emptyList()
+        }
+
         // For each revision, find the state of the entity at that point in time
         // Envers will automatically fetch the related container entities as they existed at that revision
-        return revisions.map { revNumber ->
-            val entityAtRevision = auditReader.find(ParentEntity::class.java, id, revNumber)
-            val revisionEntity = auditReader.findRevision(DefaultRevisionEntity::class.java, revNumber)
-            ProductRevisionDto(
-                revisionNumber = revNumber,
-                revisionTimestamp = revisionEntity.revisionDate.toInstant(),
-                product = entityAtRevision,
-            )
+        return revisions.mapNotNull { revNumber ->
+            try {
+                val entityAtRevision = auditReader.find(ParentEntity::class.java, id, revNumber)
+                val revisionEntity = auditReader.findRevision(DefaultRevisionEntity::class.java, revNumber)
+
+                // Skip null entities (might happen for deleted entities in some cases)
+                if (entityAtRevision == null) {
+                    logger().warn("Entity at revision {} is null for product ID: {}", revNumber, id)
+                    return@mapNotNull null
+                }
+
+                ProductRevisionDto(
+                    revisionNumber = revNumber,
+                    revisionTimestamp = revisionEntity.revisionDate.toInstant(),
+                    product = entityAtRevision,
+                )
+            } catch (e: Exception) {
+                logger().error("Error retrieving revision {} for product ID: {}", revNumber, id, e)
+                null
+            }
         }
     }
 }

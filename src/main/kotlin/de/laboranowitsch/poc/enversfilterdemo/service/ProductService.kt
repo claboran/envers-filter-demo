@@ -55,4 +55,13 @@ class ProductService(
         // Saving the parent will cascade changes to its containers and trigger Envers for all three entities
         return parentRepository.save(parent)
     }
+
+    @Transactional
+    fun deleteProduct(id: UUID) {
+        logger().info("Deleting product with ID: {}", id)
+        val product = parentRepository.findById(id)
+            .orElseThrow { EntityNotFoundException("Product with ID $id not found") }
+
+        parentRepository.delete(product)
+    }
 }
