@@ -1,0 +1,53 @@
+# Example requests for ProductController
+
+### Create a new product
+POST http://localhost:8080/api/products
+Content-Type: application/json
+
+{
+  "name": "Sample Product",
+  "status": "ACTIVE",
+  "technicalDetailsJson": {
+    "power": "100kW",
+    "torque": "200Nm",
+    "additionalProperties": {
+      "weight": "1500kg",
+      "dimensions": "4.5m x 1.8m x 1.5m"
+    }
+  },
+  "descriptionJson": {
+    "descriptions": {
+      "en": "This is a sample product description in English",
+      "de": "Dies ist eine Beispielproduktbeschreibung auf Deutsch"
+    }
+  }
+}
+
+### Update an existing product
+PUT http://localhost:8080/api/products/2a1b7017-3fcc-4838-8931-70140647cc7c
+Content-Type: application/json
+
+{
+  "name": "Updated Product",
+  "status": "INACTIVE",
+  "technicalDetailsJson": {
+    "power": "120kW",
+    "torque": "250Nm",
+    "additionalProperties": {
+      "weight": "1600kg",
+      "dimensions": "4.6m x 1.9m x 1.5m"
+    }
+  },
+  "descriptionJson": {
+    "descriptions": {
+      "en": "This is an updated product description in English",
+      "de": "Dies ist eine aktualisierte Produktbeschreibung auf Deutsch"
+    }
+  }
+}
+
+### Get product history
+GET http://localhost:8080/api/products/2a1b7017-3fcc-4838-8931-70140647cc7c/history
+Accept: application/json
+
+###
