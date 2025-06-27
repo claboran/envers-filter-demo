@@ -19,24 +19,20 @@ class ProductService(
 
 
     @Transactional
-    fun createProduct(request: ProductRequestDto): ParentEntity {
-        logger().info("Creating new product with name: {}", request.name)
-
-        val techDetailsContainer = TechnicalDetailsContainerEntity(
-            technicalDetailsJson = request.technicalDetailsJson
-        )
-        val descriptionContainer = DescriptionContainerEntity(
-            descriptionJson = request.descriptionJson
-        )
-
-        val parent = ParentEntity(
-            name = request.name,
-            status = request.status,
-            technicalDetailsContainer = techDetailsContainer,
-            descriptionContainer = descriptionContainer
-        )
-        return parentRepository.save(parent)
-    }
+    fun createProduct(request: ProductRequestDto): ParentEntity =
+        TechnicalDetailsContainerEntity(technicalDetailsJson = request.technicalDetailsJson)
+            .let { techDetailsContainer ->
+                DescriptionContainerEntity(descriptionJson = request.descriptionJson)
+                    .let { descriptionContainer ->
+                        ParentEntity(
+                            name = request.name,
+                            status = request.status,
+                            technicalDetailsContainer = techDetailsContainer,
+                            descriptionContainer = descriptionContainer
+                        ).also { logger().info("Creating new product with name: {}", it.name) }
+                    }
+            }
+            .let { parentRepository.save(it) }
 
     @Transactional
     fun updateProduct(id: UUID, request: ProductRequestDto): ParentEntity {

@@ -23,20 +23,14 @@ class ProductController(
 ) {
 
     @PostMapping
-    fun createProduct(@RequestBody request: ProductRequestDto): ResponseEntity<ParentEntity> {
-        val createdProduct = productService.createProduct(request)
-        return ResponseEntity.ok(createdProduct)
-    }
+    fun createProduct(@RequestBody request: ProductRequestDto): ResponseEntity<ParentEntity> =
+        ResponseEntity.ok(productService.createProduct(request))
 
     @PutMapping("/{id}")
-    fun updateProduct(@PathVariable id: UUID, @RequestBody request: ProductRequestDto): ResponseEntity<ParentEntity> {
-        val updatedProduct = productService.updateProduct(id, request)
-        return ResponseEntity.ok(updatedProduct)
-    }
+    fun updateProduct(@PathVariable id: UUID, @RequestBody request: ProductRequestDto): ResponseEntity<ParentEntity> =
+        ResponseEntity.ok(productService.updateProduct(id, request))
 
     @GetMapping("/{id}/history")
-    fun getProductHistory(@PathVariable id: UUID): ResponseEntity<List<ProductRevisionDto>> {
-        val history = historyService.getProductHistory(id)
-        return ResponseEntity.ok(history)
-    }
+    fun getProductHistory(@PathVariable id: UUID): ResponseEntity<List<ProductRevisionDto>> =
+        ResponseEntity.ok(historyService.getProductHistory(id))
 }
