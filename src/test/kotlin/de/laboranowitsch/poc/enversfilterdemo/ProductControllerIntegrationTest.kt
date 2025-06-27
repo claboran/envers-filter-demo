@@ -1,6 +1,8 @@
 package de.laboranowitsch.poc.enversfilterdemo
 
+import de.laboranowitsch.poc.enversfilterdemo.dto.DescriptionDto
 import de.laboranowitsch.poc.enversfilterdemo.dto.ProductRequestDto
+import de.laboranowitsch.poc.enversfilterdemo.dto.TechnicalDetailsDto
 import de.laboranowitsch.poc.enversfilterdemo.util.PostgresIntegrationTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -26,8 +28,12 @@ class ProductControllerIntegrationTest {
         val createRequest = ProductRequestDto(
             name = "Test Drill",
             status = "IN_STOCK",
-            technicalDetailsJson = "{\"power\": \"500W\"}",
-            descriptionJson = "{\"en\": \"A reliable test drill.\"}"
+            technicalDetailsJson = TechnicalDetailsDto(
+                power = "500W"
+            ),
+            descriptionJson = DescriptionDto(
+                descriptions = mapOf("en" to "A reliable test drill.")
+            )
         )
         val createResponse = restTemplate.postForEntity<Map<String, Any>>("/api/products", createRequest)
         assertEquals(HttpStatus.OK, createResponse.statusCode)
@@ -39,8 +45,13 @@ class ProductControllerIntegrationTest {
         val updateRequest = ProductRequestDto(
             name = "Test Drill PRO",
             status = "OUT_OF_STOCK",
-            technicalDetailsJson = "{\"power\": \"750W\", \"torque\": \"20Nm\"}",
-            descriptionJson = "{\"en\": \"A professional-grade test drill.\"}"
+            technicalDetailsJson = TechnicalDetailsDto(
+                power = "750W",
+                torque = "20Nm"
+            ),
+            descriptionJson = DescriptionDto(
+                descriptions = mapOf("en" to "A professional-grade test drill.")
+            )
         )
         restTemplate.put("/api/products/{id}", updateRequest, productId)
 
@@ -57,13 +68,16 @@ class ProductControllerIntegrationTest {
         assertEquals("Test Drill", revision1Product["name"])
         assertEquals("IN_STOCK", revision1Product["status"])
         val techDetails1 = revision1Product["technicalDetailsContainer"] as Map<*, *>
-        assertEquals("{\"power\": \"500W\"}", techDetails1["technicalDetailsJson"])
+        val techDetailsJson1 = techDetails1["technicalDetailsJson"] as Map<*, *>
+        assertEquals("500W", techDetailsJson1["power"])
 
         // 5. Verify Revision 2 (Update)
         val revision2Product = history[1]["product"] as Map<*, *>
         assertEquals("Test Drill PRO", revision2Product["name"])
         assertEquals("OUT_OF_STOCK", revision2Product["status"])
         val techDetails2 = revision2Product["technicalDetailsContainer"] as Map<*, *>
-        assertEquals("{\"power\": \"750W\", \"torque\": \"20Nm\"}", techDetails2["technicalDetailsJson"])
+        val techDetailsJson2 = techDetails2["technicalDetailsJson"] as Map<*, *>
+        assertEquals("750W", techDetailsJson2["power"])
+        assertEquals("20Nm", techDetailsJson2["torque"])
     }
 }
