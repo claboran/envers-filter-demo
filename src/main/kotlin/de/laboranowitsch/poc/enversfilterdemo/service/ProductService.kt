@@ -19,45 +19,42 @@ class ProductService(
 
 
     @Transactional
-    fun createProduct(request: ProductRequestDto): ParentEntity =
-        TechnicalDetailsContainerEntity(technicalDetailsJson = request.technicalDetailsJson)
-            .let { techDetailsContainer ->
-                DescriptionContainerEntity(descriptionJson = request.descriptionJson)
-                    .let { descriptionContainer ->
-                        ParentEntity(
-                            name = request.name,
-                            status = request.status,
-                            technicalDetailsContainer = techDetailsContainer,
-                            descriptionContainer = descriptionContainer
-                        ).also { logger().info("Creating new product with name: {}", it.name) }
-                    }
+    fun createProduct(request: ProductRequestDto): ParentEntity = with(request) {
+        ParentEntity(
+            name = name,
+            status = status,
+            technicalDetailsContainer = TechnicalDetailsContainerEntity(technicalDetailsJson = technicalDetailsJson),
+            descriptionContainer = DescriptionContainerEntity(descriptionJson = descriptionJson)
+        ).let { parentRepository.save(it) }
+            .also { logger().info("Creating new product with name: {}", it.name) }
+    }
+
+    @Transactional
+    fun updateProduct(id: UUID, request: ProductRequestDto): ParentEntity =
+        request.updateOrElseThrow(id).let { parentRepository.save(it) }
+            .also { logger().info("Updating product with ID: {}", it.id) }
+
+    @Transactional
+    fun deleteProduct(id: UUID) =
+        parentRepository.findById(id)
+            .orElseThrow { EntityNotFoundException("Product with ID $id not found") }
+            .let { parentRepository.delete(it) }
+            .also { logger().info("Deleted product with ID: {}", id) }
+
+
+    private fun ProductRequestDto.updateOrElseThrow(id: UUID): ParentEntity =
+        parentRepository.findById(id)
+            .orElseThrow { EntityNotFoundException("Product with ID $id not found") }
+            .apply {
+                name = this@updateOrElseThrow.name
+                status = this@updateOrElseThrow.status
+                technicalDetailsContainer = TechnicalDetailsContainerEntity(
+                    id = this.technicalDetailsContainer.id,
+                    technicalDetailsJson = this@updateOrElseThrow.technicalDetailsJson,
+                )
+                descriptionContainer = DescriptionContainerEntity(
+                    id = this.descriptionContainer.id,
+                    descriptionJson = this@updateOrElseThrow.descriptionJson,
+                )
             }
-            .let { parentRepository.save(it) }
-
-    @Transactional
-    fun updateProduct(id: UUID, request: ProductRequestDto): ParentEntity {
-        logger().info("Updating product with ID: {}", id)
-        val parent = parentRepository.findById(id)
-            .orElseThrow { EntityNotFoundException("Product with ID $id not found") }
-
-        // Update promoted fields on the parent
-        parent.name = request.name
-        parent.status = request.status
-
-        // Update JSONB data on the respective containers
-        parent.technicalDetailsContainer.technicalDetailsJson = request.technicalDetailsJson
-        parent.descriptionContainer.descriptionJson = request.descriptionJson
-
-        // Saving the parent will cascade changes to its containers and trigger Envers for all three entities
-        return parentRepository.save(parent)
-    }
-
-    @Transactional
-    fun deleteProduct(id: UUID) {
-        logger().info("Deleting product with ID: {}", id)
-        val product = parentRepository.findById(id)
-            .orElseThrow { EntityNotFoundException("Product with ID $id not found") }
-
-        parentRepository.delete(product)
-    }
 }
