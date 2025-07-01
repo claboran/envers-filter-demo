@@ -45,6 +45,21 @@ class ProductHistoryService(
                     return@mapNotNull null
                 }
 
+                // Eagerly initialize the technical details and description containers to avoid LazyInitializationException
+                entityAtRevision.technicalDetailsContainer?.let {
+                    // Access the properties to force initialization
+                    it.technicalDetailsJson.toString()
+                    // Clear the parent reference to avoid recursion issues
+                    it.parent = null
+                }
+
+                entityAtRevision.descriptionContainer?.let {
+                    // Access the properties to force initialization
+                    it.descriptionJson.toString()
+                    // Clear the parent reference to avoid recursion issues
+                    it.parent = null
+                }
+
                 ProductRevisionDto(
                     revisionNumber = revNumber,
                     revisionTimestamp = revisionEntity.revisionDate.toInstant(),
