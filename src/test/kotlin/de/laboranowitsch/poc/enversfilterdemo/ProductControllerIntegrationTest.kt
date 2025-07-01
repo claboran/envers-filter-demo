@@ -67,6 +67,9 @@ class ProductControllerIntegrationTest {
         val revision1Product = history[0]["product"] as Map<*, *>
         assertEquals("Test Drill", revision1Product["name"])
         assertEquals("IN_STOCK", revision1Product["status"])
+
+        // Check if technicalDetailsContainer exists
+        assertNotNull(revision1Product["technicalDetailsContainer"])
         val techDetails1 = revision1Product["technicalDetailsContainer"] as Map<*, *>
         val techDetailsJson1 = techDetails1["technicalDetailsJson"] as Map<*, *>
         assertEquals("500W", techDetailsJson1["power"])
@@ -75,6 +78,9 @@ class ProductControllerIntegrationTest {
         val revision2Product = history[1]["product"] as Map<*, *>
         assertEquals("Test Drill PRO", revision2Product["name"])
         assertEquals("OUT_OF_STOCK", revision2Product["status"])
+
+        // Check if technicalDetailsContainer exists
+        assertNotNull(revision2Product["technicalDetailsContainer"])
         val techDetails2 = revision2Product["technicalDetailsContainer"] as Map<*, *>
         val techDetailsJson2 = techDetails2["technicalDetailsJson"] as Map<*, *>
         assertEquals("750W", techDetailsJson2["power"])

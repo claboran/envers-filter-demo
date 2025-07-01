@@ -36,10 +36,10 @@ data class ParentEntity(
     // --- One-to-One Relationship to Technical Details ---
     @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
     @JoinColumn(name = "tech_details_id", referencedColumnName = "id")
-    var technicalDetailsContainer: TechnicalDetailsContainerEntity,
+    var technicalDetailsContainer: TechnicalDetailsContainerEntity? = null,
 
     // --- One-to-One Relationship to Descriptions ---
     @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
     @JoinColumn(name = "description_id", referencedColumnName = "id")
-    var descriptionContainer: DescriptionContainerEntity
+    var descriptionContainer: DescriptionContainerEntity? = null,
 ) : Serializable

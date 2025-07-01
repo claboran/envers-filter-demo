@@ -7,4 +7,5 @@
 
     <!-- Include all changelog files -->
     <include file="001-create-initial-tables.sql" relativeToChangelogFile="true"/>
+    <include file="/002-make-relationships-optional.sql" relativeToChangelogFile="true"/>
 </databaseChangeLog>

@@ -24,7 +24,7 @@ Content-Type: application/json
 }
 
 ### Update an existing product
-PUT http://localhost:8080/api/products/2a1b7017-3fcc-4838-8931-70140647cc7c
+PUT http://localhost:8080/api/products/2e096660-140e-4b27-9c54-69afd0ddfb2c
 Content-Type: application/json
 
 {
@@ -47,7 +47,7 @@ Content-Type: application/json
 }
 
 ### Get product history
-GET http://localhost:8080/api/products/2a1b7017-3fcc-4838-8931-70140647cc7c/history
+GET http://localhost:8080/api/products/2e096660-140e-4b27-9c54-69afd0ddfb2c/history
 Accept: application/json
 
 ###

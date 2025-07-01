@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.transaction.annotation.Transactional
 
 @SpringBootTest
 @PostgresIntegrationTest
@@ -43,8 +42,10 @@ class ProductHistoryServiceIntegrationTest {
         assertEquals(1, historyAfterCreation.size)
         assertEquals("History Test Product", historyAfterCreation[0].product.name)
         assertEquals("AVAILABLE", historyAfterCreation[0].product.status)
-        assertEquals("100W", historyAfterCreation[0].product.technicalDetailsContainer.technicalDetailsJson.power)
-        assertEquals("Original description", historyAfterCreation[0].product.descriptionContainer.descriptionJson.descriptions["en"])
+        assertNotNull(historyAfterCreation[0].product.technicalDetailsContainer)
+        assertEquals("100W", historyAfterCreation[0].product.technicalDetailsContainer?.technicalDetailsJson?.power)
+        assertNotNull(historyAfterCreation[0].product.descriptionContainer)
+        assertEquals("Original description", historyAfterCreation[0].product.descriptionContainer?.descriptionJson?.descriptions?.get("en"))
 
         // When - Update the product
         val updateRequest = ProductRequestDto(
@@ -69,15 +70,19 @@ class ProductHistoryServiceIntegrationTest {
         // First revision should be the original state
         assertEquals("History Test Product", historyAfterUpdate[0].product.name)
         assertEquals("AVAILABLE", historyAfterUpdate[0].product.status)
-        assertEquals("100W", historyAfterUpdate[0].product.technicalDetailsContainer.technicalDetailsJson.power)
-        assertEquals("Original description", historyAfterUpdate[0].product.descriptionContainer.descriptionJson.descriptions["en"])
+        assertNotNull(historyAfterUpdate[0].product.technicalDetailsContainer)
+        assertEquals("100W", historyAfterUpdate[0].product.technicalDetailsContainer?.technicalDetailsJson?.power)
+        assertNotNull(historyAfterUpdate[0].product.descriptionContainer)
+        assertEquals("Original description", historyAfterUpdate[0].product.descriptionContainer?.descriptionJson?.descriptions?.get("en"))
 
         // Second revision should be the updated state
         assertEquals("Updated History Test Product", historyAfterUpdate[1].product.name)
         assertEquals("OUT_OF_STOCK", historyAfterUpdate[1].product.status)
-        assertEquals("200W", historyAfterUpdate[1].product.technicalDetailsContainer.technicalDetailsJson.power)
-        assertEquals("15Nm", historyAfterUpdate[1].product.technicalDetailsContainer.technicalDetailsJson.torque)
-        assertEquals("Updated description", historyAfterUpdate[1].product.descriptionContainer.descriptionJson.descriptions["en"])
+        assertNotNull(historyAfterUpdate[1].product.technicalDetailsContainer)
+        assertEquals("200W", historyAfterUpdate[1].product.technicalDetailsContainer?.technicalDetailsJson?.power)
+        assertEquals("15Nm", historyAfterUpdate[1].product.technicalDetailsContainer?.technicalDetailsJson?.torque)
+        assertNotNull(historyAfterUpdate[1].product.descriptionContainer)
+        assertEquals("Updated description", historyAfterUpdate[1].product.descriptionContainer?.descriptionJson?.descriptions?.get("en"))
     }
 
     @Test
@@ -134,7 +139,8 @@ class ProductHistoryServiceIntegrationTest {
         val productId = createdProduct.id!!
 
         // Store the original technical details for verification
-        val originalPower = createdProduct.technicalDetailsContainer.technicalDetailsJson.power
+        assertNotNull(createdProduct.technicalDetailsContainer)
+        val originalPower = createdProduct.technicalDetailsContainer?.technicalDetailsJson?.power
         assertEquals("400W", originalPower)
 
         // When - Update only the nested technical details
@@ -152,8 +158,9 @@ class ProductHistoryServiceIntegrationTest {
         val updatedProduct = productService.updateProduct(productId, updateRequest)
 
         // Then - Verify the update was successful
-        assertEquals("500W", updatedProduct.technicalDetailsContainer.technicalDetailsJson.power)
-        assertEquals("25Nm", updatedProduct.technicalDetailsContainer.technicalDetailsJson.torque)
+        assertNotNull(updatedProduct.technicalDetailsContainer)
+        assertEquals("500W", updatedProduct.technicalDetailsContainer?.technicalDetailsJson?.power)
+        assertEquals("25Nm", updatedProduct.technicalDetailsContainer?.technicalDetailsJson?.torque)
 
         // Get history after update
         val historyAfterUpdate = productHistoryService.getProductHistory(productId)

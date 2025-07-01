@@ -39,8 +39,10 @@ class ProductServiceIntegrationTest {
         assertNotNull(createdProduct.id)
         assertEquals("Test Product", createdProduct.name)
         assertEquals("AVAILABLE", createdProduct.status)
-        assertEquals("500W", createdProduct.technicalDetailsContainer.technicalDetailsJson.power)
-        assertEquals("A test product", createdProduct.descriptionContainer.descriptionJson.descriptions["en"])
+        assertNotNull(createdProduct.technicalDetailsContainer)
+        assertEquals("500W", createdProduct.technicalDetailsContainer?.technicalDetailsJson?.power)
+        assertNotNull(createdProduct.descriptionContainer)
+        assertEquals("A test product", createdProduct.descriptionContainer?.descriptionJson?.descriptions?.get("en"))
 
         // Verify it's in the database
         entityManager.flush()
@@ -77,9 +79,11 @@ class ProductServiceIntegrationTest {
         assertEquals(createdProduct.id, updatedProduct.id)
         assertEquals("Updated Product", updatedProduct.name)
         assertEquals("OUT_OF_STOCK", updatedProduct.status)
-        assertEquals("750W", updatedProduct.technicalDetailsContainer.technicalDetailsJson.power)
-        assertEquals("20Nm", updatedProduct.technicalDetailsContainer.technicalDetailsJson.torque)
-        assertEquals("An updated product", updatedProduct.descriptionContainer.descriptionJson.descriptions["en"])
+        assertNotNull(updatedProduct.technicalDetailsContainer)
+        assertEquals("750W", updatedProduct.technicalDetailsContainer?.technicalDetailsJson?.power)
+        assertEquals("20Nm", updatedProduct.technicalDetailsContainer?.technicalDetailsJson?.torque)
+        assertNotNull(updatedProduct.descriptionContainer)
+        assertEquals("An updated product", updatedProduct.descriptionContainer?.descriptionJson?.descriptions?.get("en"))
 
         // Verify it's updated in the database
         entityManager.flush()
@@ -121,6 +125,156 @@ class ProductServiceIntegrationTest {
         assertThrows<EntityNotFoundException> {
             productService.deleteProduct(nonExistentId)
         }
+    }
+
+    @Test
+    @Transactional
+    fun `should create product without technical details`() {
+        // Given
+        val productRequest = ProductRequestDto(
+            name = "Product Without Tech Details",
+            status = "AVAILABLE",
+            technicalDetailsJson = null,
+            descriptionJson = DescriptionDto(
+                descriptions = mapOf("en" to "A product without technical details")
+            )
+        )
+
+        // When
+        val createdProduct = productService.createProduct(productRequest)
+
+        // Then
+        assertNotNull(createdProduct.id)
+        assertEquals("Product Without Tech Details", createdProduct.name)
+        assertEquals("AVAILABLE", createdProduct.status)
+        assertNull(createdProduct.technicalDetailsContainer)
+        assertNotNull(createdProduct.descriptionContainer)
+        assertEquals("A product without technical details", createdProduct.descriptionContainer?.descriptionJson?.descriptions?.get("en"))
+
+        // Verify it's in the database
+        entityManager.flush()
+        entityManager.clear()
+
+        val foundProduct = entityManager.find(ParentEntity::class.java, createdProduct.id)
+        assertNotNull(foundProduct)
+        assertEquals("Product Without Tech Details", foundProduct.name)
+        assertNull(foundProduct.technicalDetailsContainer)
+        assertNotNull(foundProduct.descriptionContainer)
+    }
+
+    @Test
+    @Transactional
+    fun `should create product without description`() {
+        // Given
+        val productRequest = ProductRequestDto(
+            name = "Product Without Description",
+            status = "AVAILABLE",
+            technicalDetailsJson = TechnicalDetailsDto(
+                power = "500W"
+            ),
+            descriptionJson = null
+        )
+
+        // When
+        val createdProduct = productService.createProduct(productRequest)
+
+        // Then
+        assertNotNull(createdProduct.id)
+        assertEquals("Product Without Description", createdProduct.name)
+        assertEquals("AVAILABLE", createdProduct.status)
+        assertNotNull(createdProduct.technicalDetailsContainer)
+        assertEquals("500W", createdProduct.technicalDetailsContainer?.technicalDetailsJson?.power)
+        assertNull(createdProduct.descriptionContainer)
+
+        // Verify it's in the database
+        entityManager.flush()
+        entityManager.clear()
+
+        val foundProduct = entityManager.find(ParentEntity::class.java, createdProduct.id)
+        assertNotNull(foundProduct)
+        assertEquals("Product Without Description", foundProduct.name)
+        assertNotNull(foundProduct.technicalDetailsContainer)
+        assertNull(foundProduct.descriptionContainer)
+    }
+
+    @Test
+    @Transactional
+    fun `should create product without any details`() {
+        // Given
+        val productRequest = ProductRequestDto(
+            name = "Product Without Any Details",
+            status = "AVAILABLE",
+            technicalDetailsJson = null,
+            descriptionJson = null
+        )
+
+        // When
+        val createdProduct = productService.createProduct(productRequest)
+
+        // Then
+        assertNotNull(createdProduct.id)
+        assertEquals("Product Without Any Details", createdProduct.name)
+        assertEquals("AVAILABLE", createdProduct.status)
+        assertNull(createdProduct.technicalDetailsContainer)
+        assertNull(createdProduct.descriptionContainer)
+
+        // Verify it's in the database
+        entityManager.flush()
+        entityManager.clear()
+
+        val foundProduct = entityManager.find(ParentEntity::class.java, createdProduct.id)
+        assertNotNull(foundProduct)
+        assertEquals("Product Without Any Details", foundProduct.name)
+        assertNull(foundProduct.technicalDetailsContainer)
+        assertNull(foundProduct.descriptionContainer)
+    }
+
+    @Test
+    @Transactional
+    fun `should update product to add and remove details`() {
+        // Given - Create product without any details
+        val initialRequest = ProductRequestDto(
+            name = "Initial Product",
+            status = "AVAILABLE",
+            technicalDetailsJson = null,
+            descriptionJson = null
+        )
+        val createdProduct = productService.createProduct(initialRequest)
+        assertNull(createdProduct.technicalDetailsContainer)
+        assertNull(createdProduct.descriptionContainer)
+
+        // When - Update to add technical details
+        val addTechRequest = ProductRequestDto(
+            name = "Updated Product",
+            status = "IN_STOCK",
+            technicalDetailsJson = TechnicalDetailsDto(
+                power = "750W",
+                torque = "20Nm"
+            ),
+            descriptionJson = null
+        )
+        val productWithTech = productService.updateProduct(createdProduct.id!!, addTechRequest)
+
+        // Then
+        assertNotNull(productWithTech.technicalDetailsContainer)
+        assertEquals("750W", productWithTech.technicalDetailsContainer?.technicalDetailsJson?.power)
+        assertNull(productWithTech.descriptionContainer)
+
+        // When - Update to add description and remove technical details
+        val switchDetailsRequest = ProductRequestDto(
+            name = "Switched Details",
+            status = "OUT_OF_STOCK",
+            technicalDetailsJson = null,
+            descriptionJson = DescriptionDto(
+                descriptions = mapOf("en" to "Now with description only")
+            )
+        )
+        val productWithSwitchedDetails = productService.updateProduct(createdProduct.id!!, switchDetailsRequest)
+
+        // Then
+        assertNull(productWithSwitchedDetails.technicalDetailsContainer)
+        assertNotNull(productWithSwitchedDetails.descriptionContainer)
+        assertEquals("Now with description only", productWithSwitchedDetails.descriptionContainer?.descriptionJson?.descriptions?.get("en"))
     }
 
     private fun createTestProductRequest(name: String, status: String): ProductRequestDto {

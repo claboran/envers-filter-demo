@@ -23,8 +23,8 @@ class ProductService(
         ParentEntity(
             name = name,
             status = status,
-            technicalDetailsContainer = TechnicalDetailsContainerEntity(technicalDetailsJson = technicalDetailsJson),
-            descriptionContainer = DescriptionContainerEntity(descriptionJson = descriptionJson)
+            technicalDetailsContainer = technicalDetailsJson?.let { TechnicalDetailsContainerEntity(technicalDetailsJson = it) },
+            descriptionContainer = descriptionJson?.let { DescriptionContainerEntity(descriptionJson = it) }
         ).let { parentRepository.save(it) }
             .also { logger().info("Creating new product with name: {}", it.name) }
     }
@@ -48,13 +48,45 @@ class ProductService(
             .apply {
                 name = this@updateOrElseThrow.name
                 status = this@updateOrElseThrow.status
-                technicalDetailsContainer = TechnicalDetailsContainerEntity(
-                    id = this.technicalDetailsContainer.id,
-                    technicalDetailsJson = this@updateOrElseThrow.technicalDetailsJson,
-                )
-                descriptionContainer = DescriptionContainerEntity(
-                    id = this.descriptionContainer.id,
-                    descriptionJson = this@updateOrElseThrow.descriptionJson,
-                )
+
+                // Handle technical details
+                technicalDetailsContainer = if (this@updateOrElseThrow.technicalDetailsJson != null) {
+                    // If we have technical details in the request, update or create the container
+                    if (this.technicalDetailsContainer != null) {
+                        // Update existing container
+                        TechnicalDetailsContainerEntity(
+                            id = this.technicalDetailsContainer!!.id,
+                            technicalDetailsJson = this@updateOrElseThrow.technicalDetailsJson
+                        )
+                    } else {
+                        // Create new container
+                        TechnicalDetailsContainerEntity(
+                            technicalDetailsJson = this@updateOrElseThrow.technicalDetailsJson
+                        )
+                    }
+                } else {
+                    // If no technical details in request, set to null
+                    null
+                }
+
+                // Handle description
+                descriptionContainer = if (this@updateOrElseThrow.descriptionJson != null) {
+                    // If we have description in the request, update or create the container
+                    if (this.descriptionContainer != null) {
+                        // Update existing container
+                        DescriptionContainerEntity(
+                            id = this.descriptionContainer!!.id,
+                            descriptionJson = this@updateOrElseThrow.descriptionJson
+                        )
+                    } else {
+                        // Create new container
+                        DescriptionContainerEntity(
+                            descriptionJson = this@updateOrElseThrow.descriptionJson
+                        )
+                    }
+                } else {
+                    // If no description in request, set to null
+                    null
+                }
             }
 }
