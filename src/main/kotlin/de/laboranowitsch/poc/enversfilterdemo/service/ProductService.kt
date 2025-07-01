@@ -1,10 +1,14 @@
 package de.laboranowitsch.poc.enversfilterdemo.service
 
+import de.laboranowitsch.poc.enversfilterdemo.dto.DescriptionDto
 import de.laboranowitsch.poc.enversfilterdemo.dto.ProductRequestDto
+import de.laboranowitsch.poc.enversfilterdemo.dto.TechnicalDetailsDto
 import de.laboranowitsch.poc.enversfilterdemo.entity.DescriptionContainerEntity
 import de.laboranowitsch.poc.enversfilterdemo.entity.ParentEntity
 import de.laboranowitsch.poc.enversfilterdemo.entity.TechnicalDetailsContainerEntity
+import de.laboranowitsch.poc.enversfilterdemo.repo.DescriptionContainerRepository
 import de.laboranowitsch.poc.enversfilterdemo.repo.ParentRepository
+import de.laboranowitsch.poc.enversfilterdemo.repo.TechnicalDetailsContainerRepository
 import de.laboranowitsch.poc.enversfilterdemo.util.LoggingAware
 import de.laboranowitsch.poc.enversfilterdemo.util.logger
 import jakarta.persistence.EntityNotFoundException
@@ -15,6 +19,8 @@ import java.util.UUID
 @Service
 class ProductService(
     private val parentRepository: ParentRepository,
+    private val technicalDetailsContainerRepository: TechnicalDetailsContainerRepository,
+    private val descriptionContainerRepository: DescriptionContainerRepository,
 ) : LoggingAware {
 
 
@@ -89,4 +95,24 @@ class ProductService(
                     null
                 }
             }
+
+    /**
+     * Get technical details by parent ID.
+     *
+     * @param parentId the ID of the parent entity
+     * @return the technical details if found, null otherwise
+     */
+    fun getTechnicalDetailsByParentId(parentId: UUID): TechnicalDetailsDto? =
+        technicalDetailsContainerRepository.findByParentId(parentId)?.technicalDetailsJson
+        .also { logger().info("Retrieved technical details for product with ID: {}", parentId) }
+
+    /**
+     * Get descriptions by parent ID.
+     *
+     * @param parentId the ID of the parent entity
+     * @return the descriptions if found, null otherwise
+     */
+    fun getDescriptionsByParentId(parentId: UUID): DescriptionDto? =
+        descriptionContainerRepository.findByParentId(parentId)?.descriptionJson
+        .also { logger().info("Retrieved descriptions for product with ID: {}", parentId) }
 }

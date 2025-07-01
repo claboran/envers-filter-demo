@@ -50,4 +50,12 @@ Content-Type: application/json
 GET http://localhost:8080/api/products/2e096660-140e-4b27-9c54-69afd0ddfb2c/history
 Accept: application/json
 
+### Get technical details by parent ID
+GET http://localhost:8080/api/products/2e096660-140e-4b27-9c54-69afd0ddfb2c/technical-details
+Accept: application/json
+
+### Get descriptions by parent ID
+GET http://localhost:8080/api/products/2e096660-140e-4b27-9c54-69afd0ddfb2c/descriptions
+Accept: application/json
+
 ###

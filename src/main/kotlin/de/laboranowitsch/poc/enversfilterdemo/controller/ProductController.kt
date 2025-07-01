@@ -1,7 +1,9 @@
 package de.laboranowitsch.poc.enversfilterdemo.controller
 
+import de.laboranowitsch.poc.enversfilterdemo.dto.DescriptionDto
 import de.laboranowitsch.poc.enversfilterdemo.dto.ProductRequestDto
 import de.laboranowitsch.poc.enversfilterdemo.dto.ProductRevisionDto
+import de.laboranowitsch.poc.enversfilterdemo.dto.TechnicalDetailsDto
 import de.laboranowitsch.poc.enversfilterdemo.entity.ParentEntity
 import de.laboranowitsch.poc.enversfilterdemo.service.ProductHistoryService
 import de.laboranowitsch.poc.enversfilterdemo.service.ProductService
@@ -33,4 +35,16 @@ class ProductController(
     @GetMapping("/{id}/history")
     fun getProductHistory(@PathVariable id: UUID): ResponseEntity<List<ProductRevisionDto>> =
         ResponseEntity.ok(historyService.getProductHistory(id))
+
+    @GetMapping("/{id}/technical-details")
+    fun getTechnicalDetailsByParentId(@PathVariable id: UUID): ResponseEntity<TechnicalDetailsDto> =
+        productService.getTechnicalDetailsByParentId(id)
+            ?.let { ResponseEntity.ok(it) }
+            ?: ResponseEntity.notFound().build()
+
+    @GetMapping("/{id}/descriptions")
+    fun getDescriptionsByParentId(@PathVariable id: UUID): ResponseEntity<DescriptionDto> =
+        productService.getDescriptionsByParentId(id)
+            ?.let { ResponseEntity.ok(it) }
+            ?: ResponseEntity.notFound().build()
 }
