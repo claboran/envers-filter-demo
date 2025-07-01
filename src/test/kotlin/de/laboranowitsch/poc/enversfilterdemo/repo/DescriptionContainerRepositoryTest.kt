@@ -5,8 +5,9 @@ import de.laboranowitsch.poc.enversfilterdemo.entity.DescriptionContainerEntity
 import de.laboranowitsch.poc.enversfilterdemo.entity.ParentEntity
 import de.laboranowitsch.poc.enversfilterdemo.util.PostgresIntegrationTest
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNotNull
+import org.junit.jupiter.api.assertNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.transaction.annotation.Transactional
@@ -49,10 +50,13 @@ class DescriptionContainerRepositoryTest {
         val foundDescription = descriptionContainerRepository.findByParentId(savedParent.id!!)
         
         // Then
-        assertTrue(foundDescription.isPresent)
-        assertEquals(description.id, foundDescription.get().id)
-        assertEquals(description.descriptionJson.descriptions, foundDescription.get().descriptionJson.descriptions)
-        assertEquals(savedParent.id, foundDescription.get().parent?.id)
+        assertNotNull(foundDescription)
+        assertEquals(description.id, foundDescription.id)
+        assertEquals(
+            description.descriptionJson.descriptions,
+            foundDescription.descriptionJson.descriptions,
+        )
+        assertEquals(savedParent.id, foundDescription.parent?.id)
     }
     
     @Test
@@ -61,7 +65,7 @@ class DescriptionContainerRepositoryTest {
         val foundDescription = descriptionContainerRepository.findByParentId(java.util.UUID.randomUUID())
         
         // Then
-        assertTrue(foundDescription.isEmpty)
+        assertNull(foundDescription)
     }
     
     @Test
@@ -87,7 +91,8 @@ class DescriptionContainerRepositoryTest {
         
         // Then
         val foundParent = parentRepository.findById(savedParent.id!!).get()
-        val foundDescription = descriptionContainerRepository.findById(foundParent.descriptionContainer!!.id!!).get()
+        val foundDescription = descriptionContainerRepository
+            .findById(foundParent.descriptionContainer!!.id!!).get()
         
         assertEquals(foundParent.id, foundDescription.parent?.id)
         assertEquals(foundDescription.id, foundParent.descriptionContainer?.id)
